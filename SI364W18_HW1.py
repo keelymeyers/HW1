@@ -15,9 +15,9 @@ from flask import Flask
 app = Flask(__name__)
 app.debug = True
 
-@app.route('/')
+@app.route('/class')
 def hello_to_you():
-    return 'Hello!'
+    return 'Welcome to {}!'.format("SI 364")
 
 
 if __name__ == '__main__':
