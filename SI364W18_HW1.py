@@ -1,3 +1,6 @@
+import requests
+import json
+
 ## HW 1
 ## SI 364 W18
 ## 1000 points
@@ -11,17 +14,17 @@
 ## [PROBLEM 1] - 150 points
 ## Below is code for one of the simplest possible Flask applications. Edit the code so that once you run this application locally and go to the URL 'http://localhost:5000/class', you see a page that says "Welcome to SI 364!"
 
-from flask import Flask
+from flask import Flask, request
 app = Flask(__name__)
 app.debug = True
 
 @app.route('/class')
 def hello_to_you():
-    return 'Welcome to {}!'.format("SI 364")
+    return 'Welcome to SI 364!'
 
 
-if __name__ == '__main__':
-    app.run()
+#if __name__ == '__main__':
+    #app.run()
 
 
 ## [PROBLEM 2] - 250 points
@@ -31,6 +34,16 @@ if __name__ == '__main__':
 #  "resultCount":0,
 #  "results": []
 # }
+
+@app.route('/movie/<movie>')
+def displayMovieData(movie):
+  
+    base_url = "https://itunes.apple.com/search?"
+    param_dict = {"term": movie, "entity": "movie"}
+    response = requests.get(base_url, params = param_dict)
+    response_dict = json.loads(response.text)
+    movie_data = str(response_dict)
+    return movie_data
 
 
 ## You should use the iTunes Search API to get that data.
@@ -44,6 +57,29 @@ if __name__ == '__main__':
 ## Edit the above Flask application code so that if you run the application locally and got to the URL http://localhost:5000/question, you see a form that asks you to enter your favorite number.
 ## Once you enter a number and submit it to the form, you should then see a web page that says "Double your favorite number is <number>". For example, if you enter 2 into the form, you should then see a page that says "Double your favorite number is 4". Careful about types in your Python code!
 ## You can assume a user will always enter a number only.
+
+@app.route('/question')
+def enterData():
+    s = """<!DOCTYPE html>
+<html>
+<body>
+<form action="/display" method="POST">
+  Enter your favorite number<br>
+  <input type="text" name="fav_number" value="Enter number">
+  <br>
+  <input type="submit" value="Submit">
+</form>
+</body>
+</html>"""
+    return s
+
+@app.route('/display',methods = ['POST', 'GET'])
+def displayData():
+    if request.method == 'POST':
+        data = request.form['fav_number']
+        double_num = str(int(data)*2)
+        response = '<p>Double your favorite number is {}</p>'.format(double_num)
+        return response
 
 
 ## [PROBLEM 4] - 350 points
@@ -65,3 +101,45 @@ if __name__ == '__main__':
 # You can assume that a user will give you the type of input/response you expect in your form; you do not need to handle errors or user confusion. (e.g. if your form asks for a name, you can assume a user will type a reasonable name; if your form asks for a number, you can assume a user will type a reasonable number; if your form asks the user to select a checkbox, you can assume they will do that.)
 
 # Points will be assigned for each specification in the problem.
+
+@app.route('/problem4form', methods=["GET","POST"])
+def enterRecipe():
+	s = """<!DOCTYPE html>
+<html>
+<body>
+<form action="/problem4form" method="POST">
+  <h2>Select Type (Please Select Only One)</h2><br>
+  <input type="checkbox" name="type" value="math"> Math
+  <br>
+  <input type="checkbox" name="type" value="trivia"> Trivia
+  <br>
+  <input type="checkbox" name="type" value="year"> Year
+  <br>
+  <h2>Enter a Number</h2><br>
+  <input type="text" name="number" value="Enter a number">
+  <br>
+  <input type="submit" value="Submit">
+</form>
+</body>
+</html>"""
+
+	if request.method == 'POST':
+		type_search = request.form['type']
+		num_search = request.form['number']
+		base_url = "http://numbersapi.com/{}/{}".format(num_search, type_search)
+		num_data = requests.get(base_url)
+		num_data = json.dumps(num_data.text)
+        
+		return num_data + s
+
+
+
+	else:
+		return s
+        
+
+
+
+
+if __name__ == '__main__':
+    app.run()
